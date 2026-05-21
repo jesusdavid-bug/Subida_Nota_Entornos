@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoFichaje Jesus David | Acceso</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina-acceso">
+    <main class="acceso-layout">
+        <section class="bloque-presentacion">
+            <p class="etiqueta">Control horario con ubicacion</p>
+            <h1>GeoFichaje Jesus David</h1>
+            <p class="texto-presentacion">Registra entradas y salidas solo cuando el empleado esta cerca del centro de trabajo.</p>
+        </section>
+
+        <section class="tarjeta-acceso">
+            <h2>Entrar al panel</h2>
+            <p>Escribe el DNI de un empleado guardado en MySQL.</p>
+
+            <div th:if="${mensajeError}" class="aviso aviso-error">
+                <span th:text="${mensajeError}">No se ha podido iniciar sesion.</span>
+            </div>
+
+            <form th:action="@{/login}" method="post" class="formulario-acceso">
+                <label for="dni">DNI del empleado</label>
+                <input type="text" id="dni" name="dni" placeholder="12345678A" required autocomplete="off">
+                <button type="submit">Acceder</button>
+            </form>
+        </section>
+    </main>
+</body>
+</html>

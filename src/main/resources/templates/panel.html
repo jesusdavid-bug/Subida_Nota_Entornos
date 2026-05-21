@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Fichaje</title>
+    <link rel="stylesheet" th:href="@{/css/estilos.css}">
+</head>
+<body class="pagina-panel" onload="solicitarPosicion()">
+    <main class="panel-layout">
+        <aside class="resumen-empleado">
+            <a class="enlace-salir" th:href="@{/}">Cerrar sesion</a>
+            <p class="etiqueta">Panel personal</p>
+            <h1>Hola, <span th:text="${empleado.nombre}">Empleado</span></h1>
+            <p class="texto-presentacion">Desde aqui puedes fichar entrada o salida usando tu ubicacion actual.</p>
+
+            <div class="metricas">
+                <article>
+                    <span th:text="${diasTrabajados}">0</span>
+                    <p>Entradas registradas</p>
+                </article>
+                <article>
+                    <span th:text="${horasTrabajadas}">00:00:00</span>
+                    <p>Tiempo trabajado</p>
+                </article>
+            </div>
+        </aside>
+
+        <section class="zona-fichaje">
+            <div th:if="${mensajeExito}" class="aviso aviso-ok" th:text="${mensajeExito}"></div>
+            <div th:if="${mensajeError}" class="aviso aviso-error" th:text="${mensajeError}"></div>
+
+            <section class="bloque-operacion">
+                <div>
+                    <p class="etiqueta">Ubicacion GPS</p>
+                    <h2>Registrar jornada</h2>
+                </div>
+                <div id="mapa" class="mapa">Cargando mapa...</div>
+                <p id="info-ubicacion" class="estado-ubicacion">Esperando permiso de ubicacion...</p>
+
+                <form class="acciones-fichaje" th:action="@{/fichar}" method="post">
+                    <input type="hidden" name="dni" th:value="${empleado.dni}">
+                    <input type="hidden" name="latitud" id="campoLatitud">
+                    <input type="hidden" name="longitud" id="campoLongitud">
+
+                    <button type="submit" name="estado" value="ENTRADA" class="boton-entrada" id="botonEntrada" disabled>Entrada</button>
+                    <button type="submit" name="estado" value="SALIDA" class="boton-salida" id="botonSalida" disabled>Salida</button>
+                </form>
+            </section>
+
+            <section class="bloque-historial">
+                <h2>Historial</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha y hora</th>
+                            <th>Tipo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="registro : ${fichajes}">
+                            <td th:text="${#temporals.format(registro.fechaHora, 'dd/MM/yyyy HH:mm:ss')}">21/05/2026 09:00:00</td>
+                            <td>
+                                <span class="estado-tabla"
+                                      th:classappend="${registro.estado == T(com.medac.geofichajejesusdavid.enums.EstadoFichaje).ENTRADA ? ' estado-entrada' : ' estado-salida'}"
+                                      th:text="${registro.estado}">ENTRADA</span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </section>
+        </section>
+    </main>
+
+    <script>
+        let latitudEmpleado = 0;
+        let longitudEmpleado = 0;
+        let mapaDisponible = false;
+
+        function solicitarPosicion() {
+            if (!navigator.geolocation) {
+                actualizarMensajeUbicacion("Tu navegador no soporta geolocalizacion.");
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(guardarPosicion, mostrarErrorUbicacion);
+        }
+
+        function guardarPosicion(posicion) {
+            latitudEmpleado = posicion.coords.latitude;
+            longitudEmpleado = posicion.coords.longitude;
+
+            document.getElementById("campoLatitud").value = latitudEmpleado;
+            document.getElementById("campoLongitud").value = longitudEmpleado;
+            document.getElementById("botonEntrada").disabled = false;
+            document.getElementById("botonSalida").disabled = false;
+
+            actualizarMensajeUbicacion("Ubicacion lista para fichar.");
+            pintarMapa(latitudEmpleado, longitudEmpleado);
+        }
+
+        function mostrarErrorUbicacion() {
+            actualizarMensajeUbicacion("Acepta el permiso de ubicacion para poder fichar.");
+        }
+
+        function actualizarMensajeUbicacion(mensaje) {
+            document.getElementById("info-ubicacion").textContent = mensaje;
+        }
+
+        function pintarMapa(latitud, longitud) {
+            if (!mapaDisponible) {
+                return;
+            }
+
+            const puntoEmpleado = { lat: latitud, lng: longitud };
+            const mapa = new google.maps.Map(document.getElementById("mapa"), {
+                zoom: 16,
+                center: puntoEmpleado,
+                disableDefaultUI: true,
+                zoomControl: true
+            });
+
+            new google.maps.Marker({
+                position: puntoEmpleado,
+                map: mapa,
+                title: "Ubicacion actual"
+            });
+        }
+
+        function activarGoogleMaps() {
+            mapaDisponible = true;
+            if (latitudEmpleado !== 0 || longitudEmpleado !== 0) {
+                pintarMapa(latitudEmpleado, longitudEmpleado);
+            }
+        }
+    </script>
+    <script async defer th:src="@{'https://maps.googleapis.com/maps/api/js?key=' + ${googleMapsApiKey} + '&callback=activarGoogleMaps'}"></script>
+</body>
+</html>
