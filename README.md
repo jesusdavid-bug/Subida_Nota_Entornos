@@ -160,22 +160,6 @@ Luego entra con el DNI:
 12345678A
 ```
 
-## Presentacion
-
-La carpeta `presentacion/` incluye material de apoyo para explicar el proyecto en clase:
-
-- `geofichaje_jesusdavid_presentacion.pptx`
-- `geofichaje_jesusdavid_presentacion.pdf`
-
-## Control de versiones
-
-El proyecto esta preparado para subirse a GitHub. Recomendaciones:
-
-- No subir claves privadas ni credenciales.
-- Mantener commits pequenos y descriptivos.
-- Documentar cambios importantes en este README.
-- Revisar `git status` antes de hacer `push`.
-
 ## Autor
 
 Proyecto desarrollado por **Jesus David** para la actividad de subida de nota de Entornos de Desarrollo.
